@@ -66,7 +66,7 @@ def get_db():
     return sqlite3.connect("parliament.db")
 
 # --- 1. СИСТЕМА БАЛЛОВ И УЧЕТ СООБЩЕНИЙ ---
-@dp.message(F.text)
+@dp.message(F.text & ~F.text.startswith("/"))
 async def message_handler(message: types.Message):
     if not message.from_user:
         return
