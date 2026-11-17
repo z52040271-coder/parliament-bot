@@ -146,8 +146,8 @@ async def cmd_meeting(message: types.Message):
     conn.close()
 
     builder = InlineKeyboardBuilder()
-    builder.button(text="✅ Приду", callback_data="meet_yes")
-    builder.button(text="❌ Не приду (уважительная)", callback_data="meet_no")
+    builder.button(text="✅ Прийду", callback_data="meet_yes")
+    builder.button(text="❌ Не прийду (уважительная)", callback_data="meet_no")
     builder.adjust(2)
 
     await message.answer(
@@ -299,6 +299,29 @@ async def cmd_ustav(message: types.Message):
         "6. Нарушение правил чата = 1 предупреждение."
     )
     await message.answer(text, parse_mode="Markdown")
+
+# --- 5. ТОП УЧАСТНИКОВ ПО БАЛЛАМ ---
+@dp.message(Command("топ"))
+async def cmd_top(message: types.Message):
+    conn = get_db()
+    cursor = conn.cursor()
+    # Получаем топ-10 пользователей, сортируя по очкам от большего к меньшему
+    cursor.execute("SELECT username, points FROM users WHERE points > 0 ORDER BY points DESC")
+    rows = cursor.fetchall()
+    conn.close()
+
+    if not rows:
+        await message.answer("📊 Пока что таблица лидеров пуста!")
+        return
+
+    text = "🏆 **Топ участников Парламента:**\n\n"
+    for idx, (uname, points) in enumerate(rows, start=1):
+        # Если у пользователя нет username, выводим ID или «Аноним»
+        name = f"@{uname}" if uname else "Участник"
+        text += f"{idx}. {name} — <b>{points}</b> балл(ов)\n"
+
+    await message.answer(text, parse_mode="HTML")
+
 
 # Главная функция запуска
 async def main():
